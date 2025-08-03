@@ -1,7 +1,9 @@
-use worker::*;
-use crate::config::ProxyConfig;
 use std::collections::HashMap;
+
 use chrono::{DateTime, Utc};
+use worker::*;
+
+use crate::config::ProxyConfig;
 
 /// Health checker
 pub struct HealthChecker {
@@ -25,7 +27,8 @@ impl HealthChecker {
 
         // Check if it's in the unhealthy list
         if let Some(unhealthy_time) = self.unhealthy_backends.get(backend) {
-            let recovery_time = *unhealthy_time + chrono::Duration::seconds(self.config.health_check_interval as i64);
+            let recovery_time = *unhealthy_time
+                + chrono::Duration::seconds(self.config.health_check_interval as i64);
             if Utc::now() < recovery_time {
                 return false;
             }
@@ -37,10 +40,12 @@ impl HealthChecker {
     /// Mark backend as unhealthy
     pub async fn mark_unhealthy(&mut self, backend: &str) {
         console_log!("Marking backend as unhealthy: {}", backend);
-        self.unhealthy_backends.insert(backend.to_string(), Utc::now());
+        self.unhealthy_backends
+            .insert(backend.to_string(), Utc::now());
     }
 
     /// Mark backend as healthy
+    #[allow(dead_code)]
     pub async fn mark_healthy(&mut self, backend: &str) {
         if self.unhealthy_backends.remove(backend).is_some() {
             console_log!("Marking backend as healthy: {}", backend);
@@ -48,13 +53,14 @@ impl HealthChecker {
     }
 
     /// Perform health check
+    #[allow(dead_code)]
     pub async fn perform_health_check(&mut self, backend: &str) -> bool {
         if !self.config.health_check_enabled {
             return true;
         }
 
         let health_path = "/health"; // Default health check path
-        let check_url = format!("{}{}", backend, health_path);
+        let check_url = format!("{backend}{health_path}");
 
         console_log!("Performing health check for: {}", check_url);
 
@@ -92,6 +98,7 @@ impl HealthChecker {
     }
 
     /// Get backend health status
+    #[allow(dead_code)]
     pub async fn get_backend_status(&self) -> HashMap<String, bool> {
         let mut status = HashMap::new();
         for backend in &self.config.backends {

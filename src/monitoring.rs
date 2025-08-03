@@ -1,7 +1,8 @@
-use worker::*;
-use serde_json::Value;
 use std::collections::HashMap;
+
 use chrono::Utc;
+use serde_json::Value;
+use worker::*;
 
 /// Monitoring metrics
 pub struct Metrics {
@@ -25,14 +26,21 @@ impl Metrics {
 
     /// Record request start
     pub fn record_request_start(&mut self, request_id: &str) {
-        let counter = self.request_count.entry(request_id.to_string()).or_insert(0);
+        let counter = self
+            .request_count
+            .entry(request_id.to_string())
+            .or_insert(0);
         *counter += 1;
         console_log!("Request started: {}", request_id);
     }
 
     /// Record request completion
     pub fn record_request_complete(&mut self, request_id: &str, status_code: u16) {
-        console_log!("Request completed: {} with status: {}", request_id, status_code);
+        console_log!(
+            "Request completed: {} with status: {}",
+            request_id,
+            status_code
+        );
     }
 
     /// Record error
@@ -59,6 +67,7 @@ impl Metrics {
     }
 
     /// Record cache miss
+    #[allow(dead_code)]
     pub fn record_cache_miss(&mut self, request_id: &str) {
         self.cache_misses += 1;
         console_log!("Cache miss for request: {}", request_id);
@@ -99,6 +108,7 @@ impl Metrics {
     }
 
     /// Reset statistics
+    #[allow(dead_code)]
     pub fn reset(&mut self) {
         self.request_count.clear();
         self.error_count.clear();

@@ -1,6 +1,7 @@
-use worker::*;
-use crate::config::ProxyConfig;
 use regex::Regex;
+use worker::*;
+
+use crate::config::ProxyConfig;
 
 /// Apply request middleware
 pub fn apply_request_middleware(req: Request, config: &ProxyConfig) -> Result<Request> {
@@ -21,10 +22,9 @@ pub fn apply_request_middleware(req: Request, config: &ProxyConfig) -> Result<Re
 
     // Rebuild request
     let mut init = RequestInit::new();
-    init.with_method(req.method())
-        .with_headers(headers);
+    init.with_method(req.method()).with_headers(headers);
 
-    Request::new_with_init(&req.url()?.to_string(), &init)
+    Request::new_with_init(req.url()?.as_ref(), &init)
 }
 
 /// Apply response middleware
@@ -51,7 +51,7 @@ pub fn apply_response_middleware(response: Response, _config: &ProxyConfig) -> R
 /// Check access control
 fn check_access_control(req: &Request, config: &ProxyConfig) -> Result<bool> {
     let cf = req.cf();
-    
+
     for rule in &config.access_rules {
         match rule.rule_type.as_str() {
             "deny_ip" => {
@@ -100,16 +100,24 @@ fn check_access_control(req: &Request, config: &ProxyConfig) -> Result<bool> {
 }
 
 /// Add CORS headers
+#[allow(dead_code)]
 pub fn add_cors_headers(response: &mut Response) -> Result<()> {
     let headers = response.headers().clone();
     headers.set("Access-Control-Allow-Origin", "*")?;
-    headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")?;
-    headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")?;
+    headers.set(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, DELETE, OPTIONS",
+    )?;
+    headers.set(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization, X-Requested-With",
+    )?;
     headers.set("Access-Control-Max-Age", "86400")?;
     Ok(())
 }
 
 /// Handle OPTIONS preflight request
+#[allow(dead_code)]
 pub fn handle_options_request() -> Result<Response> {
     let mut response = Response::empty()?;
     add_cors_headers(&mut response)?;

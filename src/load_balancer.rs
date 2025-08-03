@@ -1,5 +1,6 @@
-use crate::health::HealthChecker;
 use std::sync::atomic::{AtomicUsize, Ordering};
+
+use crate::health::HealthChecker;
 
 /// Load balancer strategy
 #[derive(Debug, Clone)]
@@ -23,6 +24,7 @@ impl From<&str> for LoadBalancerStrategy {
 
 /// Load balancer
 pub struct LoadBalancer {
+    #[allow(dead_code)]
     backends: Vec<String>,
     strategy: LoadBalancerStrategy,
     current_index: AtomicUsize,
@@ -37,6 +39,7 @@ impl LoadBalancer {
         }
     }
 
+    #[allow(dead_code)]
     pub fn with_strategy(backends: &[String], strategy: LoadBalancerStrategy) -> Self {
         Self {
             backends: backends.to_vec(),
@@ -55,8 +58,12 @@ impl LoadBalancer {
         match self.strategy {
             LoadBalancerStrategy::RoundRobin => self.round_robin_select(&healthy_backends),
             LoadBalancerStrategy::Random => self.random_select(&healthy_backends),
-            LoadBalancerStrategy::LeastConnections => self.least_connections_select(&healthy_backends),
-            LoadBalancerStrategy::WeightedRoundRobin => self.weighted_round_robin_select(&healthy_backends),
+            LoadBalancerStrategy::LeastConnections => {
+                self.least_connections_select(&healthy_backends)
+            }
+            LoadBalancerStrategy::WeightedRoundRobin => {
+                self.weighted_round_robin_select(&healthy_backends)
+            }
         }
     }
 
@@ -96,11 +103,13 @@ impl LoadBalancer {
     }
 
     /// Get all backends
+    #[allow(dead_code)]
     pub fn get_all_backends(&self) -> &[String] {
         &self.backends
     }
 
     /// Update backend list
+    #[allow(dead_code)]
     pub fn update_backends(&mut self, backends: Vec<String>) {
         self.backends = backends;
         self.current_index.store(0, Ordering::Relaxed);

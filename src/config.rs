@@ -1,5 +1,5 @@
-use worker::*;
 use serde::{Deserialize, Serialize};
+use worker::*;
 
 /// Path rewrite rule
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -32,6 +32,7 @@ pub struct ProxyConfig {
     pub load_balancer_strategy: String,
     pub health_check_enabled: bool,
     pub health_check_interval: u64,
+    #[allow(dead_code)]
     pub health_check_timeout: u64,
     pub cache_enabled: bool,
     pub cache_ttl: u64,
@@ -78,7 +79,9 @@ impl ProxyConfig {
 
         // Parse backend configurations
         if let Ok(backend_configs_json) = env.var("BACKEND_CONFIGS") {
-            if let Ok(backend_configs) = serde_json::from_str::<Vec<BackendConfig>>(&backend_configs_json.to_string()) {
+            if let Ok(backend_configs) =
+                serde_json::from_str::<Vec<BackendConfig>>(&backend_configs_json.to_string())
+            {
                 config.backend_configs = backend_configs;
             }
         }
@@ -108,14 +111,17 @@ impl ProxyConfig {
 
         // Path rewrite rules
         if let Ok(rules_json) = env.var("PATH_REWRITE_RULES") {
-            if let Ok(rules) = serde_json::from_str::<Vec<PathRewriteRule>>(&rules_json.to_string()) {
+            if let Ok(rules) = serde_json::from_str::<Vec<PathRewriteRule>>(&rules_json.to_string())
+            {
                 config.path_rewrite_rules = rules;
             }
         }
 
         // Custom headers
         if let Ok(headers_json) = env.var("CUSTOM_HEADERS") {
-            if let Ok(headers) = serde_json::from_str::<std::collections::HashMap<String, String>>(&headers_json.to_string()) {
+            if let Ok(headers) = serde_json::from_str::<std::collections::HashMap<String, String>>(
+                &headers_json.to_string(),
+            ) {
                 config.custom_headers = headers;
             }
         }
