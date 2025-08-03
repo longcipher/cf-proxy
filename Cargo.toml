@@ -1,0 +1,25 @@
+[package]
+name = "cf-proxy"
+version = "0.1.0"
+edition = "2021"
+authors = ["Bob Liu <akagi201@gmail.com>"]
+
+[package.metadata.release]
+release = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+worker = { version = "0.6", features = ['http'] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+url = "2.5"
+regex = "1.10"
+base64 = "0.22"
+sha2 = "0.10"
+hex = "0.4"
+chrono = { version = "0.4", features = ["wasm-bindgen"] }
+uuid = { version = "1.0", features = ["js", "v4"] }
+console_error_panic_hook = { version = "0.1.7" }
+js-sys = "0.3"

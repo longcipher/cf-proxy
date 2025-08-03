@@ -1,0 +1,22 @@
+name = "cf-proxy"
+main = "build/worker/shim.mjs"
+compatibility_date = "2025-08-03"
+
+[build]
+command = "cargo install -q worker-build && worker-build --release"
+
+[env.production.vars]
+# Configuration examples - In actual use, set via Cloudflare Dashboard or wrangler secret command
+# BACKEND_URLS = '["https://api1.example.com", "https://api2.example.com"]'
+# HEALTH_CHECK_PATH = "/health"
+# CACHE_TTL = "300"
+# LOG_LEVEL = "info"
+
+[env.staging.vars]
+# Staging environment configuration
+# BACKEND_URLS = '["https://staging-api.example.com"]'
+
+[[kv_namespaces]]
+binding = "PROXY_KV"
+id = "your-kv-namespace-id"
+preview_id = "your-preview-kv-namespace-id"
