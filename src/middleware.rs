@@ -10,21 +10,13 @@ pub fn apply_request_middleware(req: Request, config: &ProxyConfig) -> Result<Re
         return Err(Error::from("Access denied"));
     }
 
-    // Add custom headers
-    let headers = req.headers().clone();
-    for (key, value) in &config.custom_headers {
-        headers.set(key, value)?;
-    }
+    // Add lightweight identification headers without rebuilding the request
+    // (avoid consuming body for non-GET/HEAD methods)
+    let req_headers = req.headers();
+    req_headers.set("X-Proxy-Agent", "Cloudflare-Workers-CF-Proxy/1.0")?;
+    req_headers.set("X-Forwarded-By", "CF-Proxy")?;
 
-    // Add proxy identification headers
-    headers.set("X-Proxy-Agent", "Cloudflare-Workers-CF-Proxy/1.0")?;
-    headers.set("X-Forwarded-By", "CF-Proxy")?;
-
-    // Rebuild request
-    let mut init = RequestInit::new();
-    init.with_method(req.method()).with_headers(headers);
-
-    Request::new_with_init(req.url()?.as_ref(), &init)
+    Ok(req)
 }
 
 /// Apply response middleware

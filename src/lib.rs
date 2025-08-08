@@ -14,7 +14,7 @@ mod utils;
 use cache::CacheManager;
 use config::ProxyConfig;
 use health::HealthChecker;
-use load_balancer::LoadBalancer;
+use load_balancer::{LoadBalancer, LoadBalancerStrategy};
 use middleware::{apply_request_middleware, apply_response_middleware};
 use monitoring::Metrics;
 
@@ -31,7 +31,8 @@ impl ReverseProxy {
     /// Create reverse proxy instance from environment variables
     pub fn from_env(env: &Env) -> Result<Self> {
         let config = ProxyConfig::from_env(env)?;
-        let load_balancer = LoadBalancer::new(&config.backends);
+        let strategy = LoadBalancerStrategy::from(config.load_balancer_strategy.as_str());
+        let load_balancer = LoadBalancer::with_strategy(&config.backends, strategy);
         let health_checker = HealthChecker::new(&config);
         let metrics = Metrics::new();
         let cache_manager = CacheManager::new(&config);

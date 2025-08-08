@@ -105,6 +105,52 @@ id = "your-kv-namespace-id"
 preview_id = "your-preview-kv-namespace-id"
 ```
 
+### Example: Proxy a custom domain to a Notion site
+
+Use this Worker to proxy your domain to a public Notion site (e.g., akjong.com → akagi201.notion.site).
+
+1. Configure wrangler (production example):
+
+```toml
+name = "cf-proxy"
+main = "build/worker/shim.mjs"
+compatibility_date = "2025-08-03"
+
+[build]
+command = "cargo install -q worker-build && worker-build --release"
+
+[env.production.vars]
+BACKEND_URLS = '["https://akagi201.notion.site"]'
+HEALTH_CHECK_ENABLED = "false" # Notion doesn’t expose a /health endpoint you control
+
+# Optional KV if you enable cache
+# [[kv_namespaces]]
+# binding = "PROXY_KV"
+# id = "your-kv-namespace-id"
+
+# Optional (can be configured in CF Dashboard):
+# routes = [
+#   { pattern = "akjong.com/*", zone_name = "akjong.com" },
+#   { pattern = "www.akjong.com/*", zone_name = "akjong.com" }
+# ]
+```
+
+1. In Cloudflare Dashboard:
+
+- Ensure the akjong.com zone is on Cloudflare (nameservers set).
+- Workers → Routes: add `akjong.com/*` (and `www.akjong.com/*` if needed) to this Worker.
+- DNS records can remain standard; HTTP traffic will be intercepted by Routes.
+
+1. Verify:
+
+- Open <https://akjong.com> and it will proxy to <https://akagi201.notion.site> with matching paths.
+- Example: <https://akjong.com/xyz> → <https://akagi201.notion.site/xyz>
+
+Notes for Notion:
+
+- This is a transparent reverse proxy; it does not rewrite HTML. Absolute links may still point to akagi201.notion.site. If you want full domain substitution, you’ll need response body rewriting (not currently built-in).
+- CORS headers are permissive by default; regular website browsing needs no extra config.
+
 ### 3. Local Development
 
 ```bash
@@ -132,7 +178,7 @@ This feature allows you to use your Cloudflare Worker as a transparent proxy by 
 
 Make requests to your Worker URL with the target URL appended to the path:
 
-```
+```text
 https://your-worker-url.com/https://example.com/path/to/resource
 ```
 
@@ -476,3 +522,25 @@ This project uses the MIT license. See [LICENSE](LICENSE) file for details.
 - [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
 - [workers-rs Project](https://github.com/cloudflare/workers-rs)
 - [Wrangler CLI Documentation](https://developers.cloudflare.com/workers/wrangler/)
+
+## Known limitations and gaps (implementation review)
+
+This section highlights current behavior vs. documentation and areas to improve:
+
+- Request middleware may drop bodies: `apply_request_middleware` rebuilds a Request without copying the body for non-GET/HEAD methods. The body is copied later in proxying, but if middleware runs first and rebuilds, the original body can be lost. Fix by preserving the body or deferring header additions to the proxy request step only.
+- Load balancer strategy is not applied: `LoadBalancer::new` always initializes with RoundRobin and ignores the configured strategy. Random/Least/Weighted variants are placeholders that fall back to round-robin.
+- Health checks are simplistic: No per-backend configurable health path is used, and checks aren’t actively performed; backends are marked unhealthy only on request errors with a cooldown window.
+- CORS spec mismatch: Responses set `Access-Control-Allow-Origin: *` and `Access-Control-Allow-Credentials: true` together, which browsers do not allow. Consider echoing the Origin instead when credentials are needed, or set credentials to false.
+- Security headers: Uses legacy `X-XSS-Protection`; consider removing or replacing with modern protections (CSP, etc.).
+- HMAC verification utility is incorrect: `verify_hmac_sha256` computes a plain SHA-256 of `secret + data`, not a true HMAC. Replace with the `hmac` crate and constant-time comparison.
+- Access rule logic is basic: `allow_country` currently denies all non-matching requests unconditionally and doesn’t support combined allowlists/denylists robustly.
+- Redirect handling in URL-proxy mode doesn’t rewrite to the Worker domain; absolute redirects remain as-is. This is fine for transparency but note the behavior.
+- Weighted/least-connections metrics are not tracked: No per-backend connection counters or weights are currently honored.
+
+Suggested next steps (low risk):
+
+- Remove header mutation from request middleware and only apply headers in `create_proxy_request`, preserving bodies.
+- Honor `LOAD_BALANCER_STRATEGY` and implement at least true random selection using `js_sys::Date::now()` or a simple PRNG suitable for WASM.
+- Replace `verify_hmac_sha256` with a proper HMAC-SHA256.
+- Adjust CORS to echo Origin when `credentials` are required.
+- Expose a configurable health path per backend or a global `HEALTH_CHECK_PATH` and implement periodic checks.

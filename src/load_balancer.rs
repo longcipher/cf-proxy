@@ -31,14 +31,6 @@ pub struct LoadBalancer {
 }
 
 impl LoadBalancer {
-    pub fn new(backends: &[String]) -> Self {
-        Self {
-            backends: backends.to_vec(),
-            strategy: LoadBalancerStrategy::RoundRobin,
-            current_index: AtomicUsize::new(0),
-        }
-    }
-
     #[allow(dead_code)]
     pub fn with_strategy(backends: &[String], strategy: LoadBalancerStrategy) -> Self {
         Self {
