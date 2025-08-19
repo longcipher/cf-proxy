@@ -23,10 +23,10 @@ codegen-units = 1
 crate-type = ["cdylib"]
 
 [dependencies]
+axum = { version = "0.8", default-features = false }
 base64 = "0.22"
 chrono = { version = "0.4", features = ["wasm-bindgen"] }
 console_error_panic_hook = { version = "0.1.7", optional = true }
-wee_alloc = { version = "0.4.5", optional = true }
 hex = "0.4"
 js-sys = "0.3"
 regex = "1.11"
@@ -35,9 +35,9 @@ serde_json = "1.0.143"
 sha2 = "0.10"
 url = "2.5"
 uuid = { version = "1.18", features = ["js", "v4"] }
+wee_alloc = { version = "0.4.5", optional = true }
 worker = { version = "0.6.1", features = ['http'] }
 worker-macros = { version = "0.6.1", features = ['http'] }
-axum = { version = "0.8", default-features = false }
 
 [features]
 default = ["small"]

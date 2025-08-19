@@ -5,18 +5,17 @@ compatibility_date = "2025-08-19"
 [build]
 command = "cargo install -q worker-build && worker-build --release"
 
-[env.production.vars]
+[vars]
 # Configuration examples - In actual use, set via Cloudflare Dashboard or wrangler secret command
-# BACKEND_URLS = '["https://api1.example.com", "https://api2.example.com"]'
-# HEALTH_CHECK_PATH = "/health"
-# CACHE_TTL = "300"
-# LOG_LEVEL = "info"
-
-[env.staging.vars]
-# Staging environment configuration
-# BACKEND_URLS = '["https://staging-api.example.com"]'
+BACKEND_URLS = '["https://api1.example.com", "https://api2.example.com"]'
+HEALTH_CHECK_PATH = "/health"
+CACHE_TTL = "300"
+LOG_LEVEL = "info"
 
 [[kv_namespaces]]
 binding = "cf-proxy"
 preview_id = "your-preview-kv-namespace-id"
 id = "your-production-kv-namespace-id"
+
+[observability]
+enabled = true

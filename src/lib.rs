@@ -67,6 +67,12 @@ impl ReverseProxy {
         // Apply request middleware
         req = apply_request_middleware(req, &self.config)?;
 
+        console_log!(
+            "Processing request: {} {}",
+            req.method().to_string(),
+            req.url()?.path()
+        );
+
         // Check for URL path proxy pattern (e.g., /https://example.com/path)
         let (target_url, is_url_proxy) = if let Some(url) =
             self.extract_target_url_from_path(&req)?

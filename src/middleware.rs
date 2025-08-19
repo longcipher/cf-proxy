@@ -10,12 +10,8 @@ pub fn apply_request_middleware(req: Request, config: &ProxyConfig) -> Result<Re
         return Err(Error::from("Access denied"));
     }
 
-    // Add lightweight identification headers without rebuilding the request
-    // (avoid consuming body for non-GET/HEAD methods)
-    let req_headers = req.headers();
-    req_headers.set("X-Proxy-Agent", "Cloudflare-Workers-CF-Proxy/1.0")?;
-    req_headers.set("X-Forwarded-By", "CF-Proxy")?;
-
+    // Simply return the request without modifying headers
+    // Headers will be modified in create_proxy_request instead
     Ok(req)
 }
 
