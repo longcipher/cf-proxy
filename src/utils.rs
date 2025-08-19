@@ -206,3 +206,11 @@ pub fn clean_path(path: &str) -> String {
         result.trim_end_matches('/').to_string()
     }
 }
+
+pub fn set_panic_hook() {
+  #[cfg(feature = "debug")]
+  {
+    pub use console_error_panic_hook::set_once;
+    set_once();
+  }
+}

@@ -1,11 +1,23 @@
 [package]
 name = "cf-proxy"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 authors = ["Bob Liu <akagi201@gmail.com>"]
+license = "Apache-2.0"
+description = "A feature-complete, configurable reverse proxy built with Rust, running on the Cloudflare Workers platform."
+repository = "https://github.com/longcipher/cf-proxy"
 
 [package.metadata.release]
 release = false
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
+
+[profile.release]
+lto = true
+strip = true
+opt-level = "s"
+codegen-units = 1
 
 [lib]
 crate-type = ["cdylib"]
@@ -13,13 +25,21 @@ crate-type = ["cdylib"]
 [dependencies]
 base64 = "0.22"
 chrono = { version = "0.4", features = ["wasm-bindgen"] }
-console_error_panic_hook = { version = "0.1.7" }
+console_error_panic_hook = { version = "0.1.7", optional = true }
+wee_alloc = { version = "0.4.5", optional = true }
 hex = "0.4"
 js-sys = "0.3"
-regex = "1.10"
+regex = "1.11"
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde_json = "1.0.143"
 sha2 = "0.10"
 url = "2.5"
-uuid = { version = "1.0", features = ["js", "v4"] }
-worker = { version = "0.6", features = ['http'] }
+uuid = { version = "1.18", features = ["js", "v4"] }
+worker = { version = "0.6.1", features = ['http'] }
+worker-macros = { version = "0.6.1", features = ['http'] }
+axum = { version = "0.8", default-features = false }
+
+[features]
+default = ["small"]
+small = ["dep:wee_alloc"]
+debug = ["dep:console_error_panic_hook"]

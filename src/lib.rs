@@ -367,7 +367,7 @@ impl ReverseProxy {
 /// Main entry point
 #[event(fetch)]
 pub async fn main(req: Request, env: Env, ctx: Context) -> Result<Response> {
-    console_error_panic_hook::set_once();
+    utils::set_panic_hook();
 
     // Create proxy instance
     let mut proxy = match ReverseProxy::from_env(&env) {

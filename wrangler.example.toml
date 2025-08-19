@@ -1,6 +1,6 @@
 name = "cf-proxy"
 main = "build/worker/shim.mjs"
-compatibility_date = "2025-08-03"
+compatibility_date = "2025-08-19"
 
 [build]
 command = "cargo install -q worker-build && worker-build --release"
@@ -17,6 +17,6 @@ command = "cargo install -q worker-build && worker-build --release"
 # BACKEND_URLS = '["https://staging-api.example.com"]'
 
 [[kv_namespaces]]
-binding = "PROXY_KV"
-id = "your-kv-namespace-id"
+binding = "cf-proxy"
 preview_id = "your-preview-kv-namespace-id"
+id = "your-production-kv-namespace-id"

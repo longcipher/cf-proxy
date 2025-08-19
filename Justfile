@@ -8,3 +8,18 @@ lint:
   cargo machete
 test:
   cargo test
+# Build project
+build:
+    npx wrangler build
+# Start development server
+dev:
+    npx wrangler dev
+# Deploy to production
+deploy:
+    npx wrangler deploy
+# View real-time logs
+logs:
+    npx wrangler tail
+# Clean build files
+clean:
+    rm -rf build/ target/
